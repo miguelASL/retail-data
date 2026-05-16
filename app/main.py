@@ -1,20 +1,25 @@
 from fastapi import FastAPI
 from app.db.connection import test_connection
-from app.routers import upload
+from app.routers.upload import router as upload_router
 
 app = FastAPI(
     title="Retail Data API",
-    version="1.0.0",
-    description="API para carga y gestión de datos retail",
+    version="1.0.0"
 )
 
-app.include_router(upload.router)
-
-
-@app.get("/health", tags=["Health"])
+@app.get("/health")
 def health_check():
     try:
-        result = test_connection()
-        return {"ok": True, "connected": True, "tables": [row[0] for row in result]}
+        tables = test_connection()
+        return {
+            "status": "ok",
+            "database": "connected",
+            "tables": tables
+        }
     except Exception as e:
-        return {"ok": False, "connected": False, "error": str(e)}
+        return {
+            "status": "error",
+            "database": str(e)
+        }
+
+app.include_router(upload_router)
